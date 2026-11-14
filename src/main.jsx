@@ -3,67 +3,10 @@ import {createRoot} from 'react-dom/client';
 import Hls from 'hls.js';
 import {parseM3U, exportM3U} from './playlist';
 import './style.css';
+import {parseW3U} from './w3u';
 const KEY = 'online-tv-th-channels-v1';
 const SELECTED = 'online-tv-th-selected-v1';
 const initial = [];
-const thaiLivePages = [
-  [
-    "Thai PBS",
-    "https://www.thaipbs.or.th/live"
-  ],
-  [
-    "โทรทัศน์รัฐสภา",
-    "https://www.tpchannel.org/live"
-  ],
-  [
-    "TNN 16",
-    "https://www.tnnthailand.com/live/"
-  ],
-  [
-    "Workpoint 23",
-    "https://www.workpointtv.com/live"
-  ],
-  [
-    "True4U 24",
-    "https://true4u.com/live/"
-  ],
-  [
-    "ช่อง 8",
-    "https://www.thaich8.com/live"
-  ],
-  [
-    "MONO29",
-    "https://www.monomax.me/livetv"
-  ],
-  [
-    "9 MCOT HD",
-    "https://tv.mcot.net/mcothd"
-  ],
-  [
-    "one31",
-    "https://www.one31.net/live"
-  ],
-  [
-    "ไทยรัฐทีวี 32",
-    "https://www.thairath.co.th/tv/live"
-  ],
-  [
-    "ช่อง 3 HD",
-    "https://ch3plus.com/live"
-  ],
-  [
-    "อมรินทร์ทีวี 34",
-    "https://www.amarintv.com/live"
-  ],
-  [
-    "ช่อง 7HD",
-    "https://www.ch7.com/en/live/"
-  ],
-  [
-    "PPTV HD 36",
-    "https://www.pptvhd36.com/live/"
-  ]
-];
 const sections = {live:'Live TV',movies:'Movies',series:'Series'};
 const kindOf = c => c.kind || 'live';
 const playlistPaths = ['verified-live.m3u','verified-vod.m3u'];
@@ -185,16 +128,27 @@ function App() {
     event.target.value='';
     if(!file) return;
     try { importContent(await file.text()); }
-    catch { setNotice('อ่านไฟล์ M3U ไม่สำเร็จ'); }
+    catch { setNotice('อ่านไฟล์ Playlist ไม่สำเร็จ'); }
   }
   function importContent(content,base){
-    const parsed=parseM3U(content,base,kind).map(c=>({...c,id:crypto.randomUUID()}));
-    if(!parsed.length){setNotice('ไม่พบรายการใน Playlist M3U');return;}
+    const isW3U = /^[\s\uFEFF]*[{[]/.test(content);
+    let items;
+    let references = 0;
+    try {
+      if (isW3U) ({items, references} = parseW3U(content, base, kind));
+      else items = parseM3U(content, base, kind);
+    } catch {
+      setNotice('โครงสร้าง W3U อ่านไม่ได้');
+      return;
+    }
+    const parsed = items.map(c=>({...c,id:crypto.randomUUID()}));
+    const skipped = references ? ` · ข้ามลิงก์อ้างอิง Playlist ${references} รายการ` : '';
+    if(!parsed.length){setNotice('ไม่พบ URL สื่อโดยตรงในไฟล์'+skipped);return;}
     setChannels(old=>{
       const urls=new Set([...old,...catalog].map(c=>c.url));
       return [...old,...parsed.filter(c=>!urls.has(c.url)&&urls.add(c.url))];
     });
-    setNotice('นำเข้า Playlist แล้ว ระบบข้าม URL ซ้ำ');
+    setNotice('นำเข้า Playlist แล้ว ระบบข้าม URL ซ้ำ'+skipped);
   }
   async function importRemote(event){
     event.preventDefault();
@@ -216,21 +170,11 @@ function App() {
     <main><nav className="sectionNav" aria-label="ประเภทสื่อ">{Object.entries(sections).map(([key,label])=><button key={key} aria-pressed={kind===key} onClick={()=>{setKind(key);setCategory('ทั้งหมด');setSearch('')}}>{label}</button>)}</nav>{catalogError&&<p className="error" role="status">โหลดรายการตั้งต้นไม่สำเร็จ</p>}<section className="playerPanel"><div className="tvStage" ref={tvStage}><div className="playerBox">{current?<video key={current.id} ref={video} controls playsInline autoPlay poster={validHttp(current.logo)?current.logo:undefined}/>:<div className="emptyPlayer"><div className="playMark">▶</div><strong>ยังไม่ได้เลือกรายการ</strong><span>เลือกรายการด้านล่าง หรือนำเข้า Playlist ของคุณ</span></div>}</div>
     {isTv&&<><button className="tvMenuTrigger" onClick={()=>setTvMenu(v=>!v)} aria-expanded={tvMenu}>☰ {tvMenu?'ซ่อนรายการช่อง':'รายการช่องทีวี'}</button>{(tvMenu||tvLayout==='split')&&<div className="tvChannelMenu" aria-label="รายการช่องสำหรับรีโมต"><div className="tvMenuTitle">{sections[kind]} · ← → เปลี่ยนประเภท <button onClick={()=>setTvMenu(false)}>✕ ปิด</button></div><div className="tvMenuGrid">{sectionItems.map((c,i)=><button key={c.id} ref={el=>tvRefs.current[i]=el} className={'tvMenuChannel '+(i===tvFocused?'focused ':'')+(c.id===selected?'playing':'')} onMouseEnter={()=>setTvFocused(i)} onClick={()=>{setTvFocused(i);choose(c)}}>{validHttp(c.logo)?<img src={c.logo} alt=""/>:<span>📺</span>}<strong>{c.name}</strong></button>)}</div>{!sectionItems.length&&<p>ยังไม่มีรายการในประเภทนี้</p>}</div>}</>}</div>
     <div className="playerFooter"><div><span className="eyebrow">{current?.category||'พร้อมรับชม'}</span><h2>{current?.name||'เลือกรายการเพื่อเริ่มเล่น'}</h2></div><button className="primary" disabled={!current} onClick={()=>{if(isTv)tvStage.current?.requestFullscreen?.();else video.current?.requestFullscreen?.()}}>⛶ ขยายเต็มจอ</button></div>{credit&&<p className="streamCredit">{credit.credit} · <a href={credit.rights} target="_blank" rel="noreferrer">แหล่งที่มา</a> · <a href={credit.license} target="_blank" rel="noreferrer">สัญญาอนุญาต</a></p>}{error&&<p className="error" role="alert">{error}</p>}</section>
-    {admin&&<section className="panel"><div className="sectionHead"><h2>จัดการช่องทีวี</h2><span>ข้อมูลบันทึกในเบราว์เซอร์เครื่องนี้</span></div><div className="tools"><button onClick={()=>fileInput.current?.click()}>＋ นำเข้าไฟล์ M3U</button><input hidden type="file" accept=".m3u,.m3u8,.txt,audio/x-mpegurl" ref={fileInput} onChange={importFile}/><button onClick={download} disabled={!channels.length}>↓ ส่งออก M3U</button><button className="danger" onClick={()=>{if(confirm('ลบรายการที่เพิ่มเองทั้งหมดในเครื่องนี้?')){setChannels([]);setSelected('');setFavorites([]);}}} disabled={!personal.length}>ล้างรายการที่เพิ่มเอง</button></div>
+    {admin&&<section className="panel"><div className="sectionHead"><h2>จัดการช่องทีวี</h2><span>ข้อมูลบันทึกในเบราว์เซอร์เครื่องนี้</span></div><div className="tools"><button onClick={()=>fileInput.current?.click()}>＋ นำเข้าไฟล์ M3U / W3U</button><input hidden type="file" accept=".m3u,.m3u8,.w3u,.txt,audio/x-mpegurl" ref={fileInput} onChange={importFile}/><button onClick={download} disabled={!channels.length}>↓ ส่งออก M3U</button><button className="danger" onClick={()=>{if(confirm('ลบรายการที่เพิ่มเองทั้งหมดในเครื่องนี้?')){setChannels([]);setSelected('');setFavorites([]);}}} disabled={!personal.length}>ล้างรายการที่เพิ่มเอง</button></div>
       <form className="tools" onSubmit={importRemote}><label>URL Playlist <input name="playlist" type="url" required placeholder="https://…/playlist.m3u"/></label><button>นำเข้าจาก URL</button></form><form className="editor" onSubmit={save}><h3>{editing?'แก้ไขช่องทีวี':'เพิ่มช่องทีวีใหม่'}</h3><div className="fields"><label>ชื่อช่อง *<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="เช่น ช่องตัวอย่าง"/></label><label>URL สตรีม *<input required type="url" value={form.url} onChange={e=>setForm({...form,url:e.target.value})} placeholder="https://.../stream.m3u8"/></label><label>URL โลโก้ (ไม่บังคับ)<input type="url" value={form.logo} onChange={e=>setForm({...form,logo:e.target.value})} placeholder="https://.../logo.png"/></label><label>ประเภท<select value={form.kind} onChange={e=>setForm({...form,kind:e.target.value})}>{Object.entries(sections).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label><label>หมวดหมู่<input value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="ทั่วไป"/></label></div><div className="tools"><button className="primary" type="submit">{editing?'บันทึกการแก้ไข':'＋ เพิ่มช่อง'}</button>{editing&&<button type="button" onClick={()=>{setEditing(null);setForm(blankForm);}}>ยกเลิก</button>}</div></form>{notice&&<p className="notice" role="status">{notice}</p>}</section>}
     <section className="panel channelPanel"><div className="sectionHead"><h2>{sections[kind]}</h2><span>{sectionItems.length} รายการ</span></div><div className="catalog"><input className="search" placeholder="⌕ ค้นหาช่องรายการ..." value={search} onChange={e=>setSearch(e.target.value)}/><div className="categories">{categories.map(cat=><button key={cat} className={cat===category?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div>
     {filtered.length?<div className="channelGrid">{filtered.map(c=><div key={c.id} className={'channel '+(current?.id===c.id?'selected':'')}><button className="channelMain" onClick={()=>choose(c)}><div className="logo">{validHttp(c.logo)?<img src={c.logo} alt="" onError={e=>e.currentTarget.style.display='none'}/>:<span>📺</span>}</div><strong title={c.name}>{c.name}</strong><small>{c.category||'ทั่วไป'}</small></button><div className="channelActions"><button title="รายการโปรด" onClick={()=>toggleFav(c.id)}>{favorites.includes(c.id)?'★':'☆'}</button>{admin&&personal.some(item=>item.id===c.id)&&<><button title="แก้ไข" onClick={()=>edit(c)}>✎</button><button title="ลบ" onClick={()=>remove(c)}>×</button></>}</div></div>)}</div>:<div className="emptyList">{sectionItems.length?'ไม่พบรายการที่ตรงกับการค้นหา':'ยังไม่มีรายการในประเภทนี้'}</div>}</div></section>
-    {kind==='live'&&<section className="panel" aria-label="ช่องทีวีไทยออนไลน์">
-      <div className="sectionHead"><h2>ช่องทีวีไทยออนไลน์</h2><span>{thaiLivePages.length} ช่อง</span></div>
-      <div className="catalog">
-        <p>เลือกรายการเพื่อเปิดหน้าดูสดของสถานีหรือผู้ให้บริการ</p>
-        <ul style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:'12px',padding:0,listStyle:'none'}}>
-          {thaiLivePages.filter(([name])=>name.toLowerCase().includes(search.trim().toLowerCase())).map(([name,url])=>
-            <li key={name}><a className="adminToggle" style={{display:'block',textDecoration:'none'}} href={url} target="_blank" rel="noopener noreferrer">{name} ↗</a></li>
-          )}
-        </ul>
-      </div>
-    </section>}</main><footer>Online TV & VOD v0.4 · ใช้งานสตรีมที่ได้รับอนุญาตเท่านั้น · ไม่มีการส่งข้อมูลรายการช่องไปยังเซิร์ฟเวอร์</footer></div>;
+    </main><footer>Online TV & VOD v0.4 · ใช้งานสตรีมที่ได้รับอนุญาตเท่านั้น · ไม่มีการส่งข้อมูลรายการช่องไปยังเซิร์ฟเวอร์</footer></div>;
 }
 createRoot(document.getElementById('root')).render(<App/>);
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>{}));}
