@@ -1,0 +1,139 @@
+{
+  "checked_utc": "2026-11-14T02:33:01.989232+00:00",
+  "origin": "https://lnwlawyer.github.io",
+  "results": [
+    {
+      "id": "mux",
+      "name": "Big Buck Bunny",
+      "kind": "movies",
+      "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+      "credit": "\u00a9 2008 Blender Foundation / www.bigbuckbunny.org",
+      "rights": "https://peach.blender.org/about/",
+      "license": "https://creativecommons.org/licenses/by/3.0/",
+      "technical": "pass",
+      "codec": "h264",
+      "mode": "vod",
+      "sample_bytes": 1915156,
+      "decision": "include"
+    },
+    {
+      "id": "tears",
+      "name": "Tears of Steel",
+      "kind": "movies",
+      "url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+      "credit": "\u00a9 Blender Foundation / mango.blender.org",
+      "rights": "https://mango.blender.org/about/",
+      "license": "https://creativecommons.org/licenses/by/3.0/",
+      "technical": "pass",
+      "codec": "h264",
+      "mode": "vod",
+      "sample_bytes": 60536,
+      "decision": "include"
+    },
+    {
+      "id": "sintel",
+      "name": "Sintel",
+      "kind": "movies",
+      "url": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+      "credit": "\u00a9 Blender Foundation / durian.blender.org",
+      "rights": "https://durian.blender.org/about/",
+      "license": "https://creativecommons.org/licenses/by/3.0/",
+      "technical": "unverified",
+      "reason": "HTTP 403; curl=0",
+      "decision": "playback-not-confirmed"
+    },
+    {
+      "id": "live-demo",
+      "name": "Unified Streaming Live Reference",
+      "kind": "live",
+      "url": "https://demo.unified-streaming.com/k8s/live/stable/live.isml/.m3u8",
+      "technical": "pass",
+      "codec": "h264",
+      "mode": "live",
+      "sample_bytes": 159800,
+      "decision": "rights-not-confirmed"
+    },
+    {
+      "id": "pbs",
+      "name": "Big Buck Bunny",
+      "kind": "movies",
+      "url": "https://pbs.github.io/test-streams/test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+      "technical": "pass",
+      "codec": "h264",
+      "mode": "vod",
+      "sample_bytes": 1915156,
+      "decision": "duplicate-title"
+    },
+    {
+      "id": "mux480",
+      "name": "Big Buck Bunny",
+      "kind": "movies",
+      "url": "https://test-streams.mux.dev/x36xhzz/url_6/193039199_mp4_h264_aac_480x270_7.m3u8",
+      "technical": "unverified",
+      "reason": "HTTP 404; curl=0",
+      "decision": "duplicate-title"
+    },
+    {
+      "id": "jw-countdown",
+      "name": "Archived Live VTT Countdown",
+      "kind": "live",
+      "url": "https://playertest.longtailvideo.com/streams/live-vtt-countdown/live.m3u8",
+      "technical": "pass",
+      "codec": "h264",
+      "mode": "live",
+      "sample_bytes": 73696,
+      "decision": "rights-not-confirmed"
+    },
+    {
+      "id": "jw-vod",
+      "name": "JW Player test stream",
+      "kind": "movies",
+      "url": "https://s3.amazonaws.com/bob.jwplayer.com/%7Ealex/123633/new_master.m3u8",
+      "technical": "unverified",
+      "reason": "HTTP 403; curl=0",
+      "decision": "rights-not-confirmed"
+    },
+    {
+      "id": "ep1",
+      "name": "Caminandes 1 \u00b7 Llama Drama",
+      "kind": "series",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d0/Caminandes-_Llama_Drama_-_Short_Movie.ogv/Caminandes-_Llama_Drama_-_Short_Movie.ogv.480p.vp9.webm",
+      "credit": "Pablo Vazquez, Beorn Leonard, Francesco Siddi \u00b7 Music and Sound by Jan Morgenstern",
+      "rights": "https://commons.wikimedia.org/wiki/File:Caminandes-_Llama_Drama_-_Short_Movie.ogv",
+      "license": "https://creativecommons.org/licenses/by/3.0/",
+      "technical": "pass",
+      "codec": "vp9",
+      "mode": "vod",
+      "sample_bytes": 4749930,
+      "decision": "include"
+    },
+    {
+      "id": "ep2",
+      "name": "Caminandes 2 \u00b7 Gran Dillama",
+      "kind": "series",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7c/Caminandes_-_Gran_Dillama_-_Blender_Foundation%27s_new_Open_Movie.webm/Caminandes_-_Gran_Dillama_-_Blender_Foundation%27s_new_Open_Movie.webm.480p.vp9.webm",
+      "credit": "Blender Foundation",
+      "rights": "https://commons.wikimedia.org/wiki/File:Caminandes_-_Gran_Dillama_-_Blender_Foundation%27s_new_Open_Movie.webm",
+      "license": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "technical": "pass",
+      "codec": "vp9",
+      "mode": "vod",
+      "sample_bytes": 16072298,
+      "decision": "include"
+    },
+    {
+      "id": "ep3",
+      "name": "Caminandes 3 \u00b7 Llamigos",
+      "kind": "series",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/transcoded/a/ab/Caminandes_3_-_Llamigos_-_Blender_Animated_Short.webm/Caminandes_3_-_Llamigos_-_Blender_Animated_Short.webm.480p.vp9.webm",
+      "credit": "Blender Foundation",
+      "rights": "https://commons.wikimedia.org/wiki/File:Caminandes_3_-_Llamigos_-_Blender_Animated_Short.webm",
+      "license": "https://creativecommons.org/licenses/by/3.0/",
+      "technical": "pass",
+      "codec": "vp9",
+      "mode": "vod",
+      "sample_bytes": 16655692,
+      "decision": "include"
+    }
+  ]
+}
